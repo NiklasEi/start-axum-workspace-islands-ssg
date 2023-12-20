@@ -1,5 +1,3 @@
-use crate::error_template::{AppError, ErrorTemplate};
-
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -18,14 +16,15 @@ pub fn App() -> impl IntoView {
         <Title text="Welcome to Leptos"/>
 
         // content for this welcome page
-        <Router fallback=|| {
-            let mut outside_errors = Errors::default();
-            outside_errors.insert_with_default_key(AppError::NotFound);
-            view! { <ErrorTemplate outside_errors/> }.into_view()
-        }>
+        <Router>
             <main>
                 <Routes>
-                    <Route path="" view=HomePage/>
+                    <StaticRoute
+                        path=""
+                        view=HomePage
+
+                        static_params=move || Box::pin(async move { StaticParamsMap::default() })
+                    />
                 </Routes>
             </main>
         </Router>
@@ -35,12 +34,16 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    // Creates a reactive value to update the button
+    view! {
+        <h1>"Welcome to Leptos!"</h1>
+        <Counter/>
+    }
+}
+
+#[island]
+fn Counter() -> impl IntoView {
     let (count, set_count) = create_signal(0);
     let on_click = move |_| set_count.update(|count| *count += 1);
 
-    view! {
-        <h1>"Welcome to Leptos!"</h1>
-        <button on:click=on_click>"Click Me: " {count}</button>
-    }
+    view! { <button on:click=on_click>"Click Me: " {count}</button> }
 }
